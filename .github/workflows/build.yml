@@ -4,22 +4,36 @@ on: [pull_request]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-    
+
     steps:
-    - uses: actions/checkout@v1
-    - name: Use Node.js 10.x
-      uses: actions/setup-node@v1
-      with:
-        node-version: '10.x'
-    - name: yarn install
-      run: yarn install
-    - name: yarn build
-      run: yarn build
-      env:
-        CI: true
-    - name: yarn test
-      run: yarn test
-      env:
-        CI: true
+      - uses: actions/checkout@v1
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: package-json
+          path: package.json
+
+      - uses: actions/github-script@v2
+        env:
+          GITHUB_RUN_ID: ${{github.run_id}}
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const path = require('path')
+            const scriptPath = path.resolve('./test.js')
+            return require(scriptPath)({context, github, run_id: process.env.GITHUB_RUN_ID})
+    # - name: Use Node.js 10.x
+    #   uses: actions/setup-node@v1
+    #   with:
+    #     node-version: '10.x'
+    # - name: yarn install
+    #   run: yarn install
+    # - name: yarn build
+    #   run: yarn build
+    #   env:
+    #     CI: true
+    # - name: yarn test
+    #   run: yarn test
+    #   env:
+    #     CI: true
